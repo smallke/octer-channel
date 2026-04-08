@@ -1,33 +1,38 @@
-require('dotenv').config()
+import WebSocket from 'ws'
+import os from 'os'
+import { spawn } from 'child_process'
 
-const WebSocket = require('ws')
-const os = require('os')
-const { spawn } = require('child_process')
-
-const API_KEY = process.env.API_KEY || ''
 const BACKEND_WS_URL = 'wss://octer.ai/ws/bridge'
 const OPENCLAW_CMD = 'openclaw'
 const RECONNECT_INTERVAL = 3000 // ms
 
-if (!API_KEY) {
-  console.error('[octer-channel] ERROR: API_KEY is required in .env')
-  process.exit(1)
-}
-
-const hostname = os.hostname()
-const machineId = os.hostname() + '-' + os.userInfo().username
-
+let apiKey = ''
+let log = console
 let ws = null
 let reconnectTimer = null
 
+export function start(config = {}) {
+  apiKey = config.apiKey || process.env.API_KEY || ''
+  if (config.logger) log = config.logger
+
+  if (!apiKey) {
+    log.error('[octer-channel] ERROR: API_KEY is required')
+    return
+  }
+
+  connect()
+}
+
 function connect() {
-  const url = `${BACKEND_WS_URL}?api_key=${API_KEY}`
-  console.log(`[octer-channel] Connecting to ${BACKEND_WS_URL} ...`)
+  const hostname = os.hostname()
+  const machineId = hostname + '-' + os.userInfo().username
+  const url = `${BACKEND_WS_URL}?api_key=${apiKey}`
+  log.info(`[octer-channel] Connecting to ${BACKEND_WS_URL} ...`)
 
   ws = new WebSocket(url)
 
   ws.on('open', () => {
-    console.log('[octer-channel] Connected to cloud backend')
+    log.info('[octer-channel] Connected to cloud backend')
     // Send status message
     ws.send(JSON.stringify({
       type: 'status',
@@ -43,7 +48,7 @@ function connect() {
     try {
       msg = JSON.parse(data.toString())
     } catch {
-      console.error('[octer-channel] Bad JSON from backend')
+      log.error('[octer-channel] Bad JSON from backend')
       return
     }
 
@@ -52,18 +57,18 @@ function connect() {
     } else if (msg.type === 'pong') {
       // keepalive ack
     } else {
-      console.log('[octer-channel] Unknown message type:', msg.type)
+      log.info('[octer-channel] Unknown message type:', msg.type)
     }
   })
 
   ws.on('close', (code, reason) => {
-    console.log(`[octer-channel] Disconnected (code=${code}, reason=${reason || ''})`)
+    log.info(`[octer-channel] Disconnected (code=${code}, reason=${reason || ''})`)
     ws = null
     scheduleReconnect()
   })
 
   ws.on('error', (err) => {
-    console.error('[octer-channel] WebSocket error:', err.message)
+    log.error('[octer-channel] WebSocket error:', err.message)
     // 'close' event will follow, which triggers reconnect
   })
 
@@ -79,7 +84,7 @@ function connect() {
 
 function scheduleReconnect() {
   if (reconnectTimer) return
-  console.log(`[octer-channel] Reconnecting in ${RECONNECT_INTERVAL / 1000}s ...`)
+  log.info(`[octer-channel] Reconnecting in ${RECONNECT_INTERVAL / 1000}s ...`)
   reconnectTimer = setTimeout(() => {
     reconnectTimer = null
     connect()
@@ -94,22 +99,22 @@ async function handleToolRequest(msg) {
   const { request_id, tool_name, arguments: args } = msg
   const query = args?.query || ''
 
-  console.log(`[octer-channel] tool_request id=${request_id} tool=${tool_name}`)
-  console.log(`[octer-channel]   query: ${query.slice(0, 200)}`)
+  log.info(`[octer-channel] tool_request id=${request_id} tool=${tool_name}`)
+  log.info(`[octer-channel]   query: ${query.slice(0, 200)}`)
 
   try {
     const result = await executeOpenClaw(query)
-    console.log(`[octer-channel] tool_response id=${request_id} success=true (${result.length} chars)`)
+    log.info(`[octer-channel] tool_response id=${request_id} success=true (${result.length} chars)`)
     sendResponse(request_id, result, null, true)
   } catch (err) {
-    console.error(`[octer-channel] tool_response id=${request_id} error:`, err.message)
+    log.error(`[octer-channel] tool_response id=${request_id} error:`, err.message)
     sendResponse(request_id, null, err.message, false)
   }
 }
 
 function sendResponse(requestId, result, error, success) {
   if (!ws || ws.readyState !== WebSocket.OPEN) {
-    console.error('[octer-channel] Cannot send response, WebSocket not connected')
+    log.error('[octer-channel] Cannot send response, WebSocket not connected')
     return
   }
   ws.send(JSON.stringify({
@@ -155,5 +160,7 @@ function executeOpenClaw(query) {
   })
 }
 
-// Start
-connect()
+// Standalone mode: run directly with `node src/index.js`
+if (process.argv[1]?.endsWith('src/index.js')) {
+  import('dotenv').then(d => { d.config?.(); start({ apiKey: process.env.API_KEY }) }).catch(() => start({ apiKey: process.env.API_KEY }))
+}

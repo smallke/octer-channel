@@ -1,0 +1,23 @@
+{
+  "id": "octer-channel",
+  "name": "Octer Channel",
+  "description": "WebSocket bridge to Octer.ai cloud backend",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "apiKey": {
+        "type": "string"
+      }
+    },
+    "required": ["apiKey"]
+  },
+  "uiHints": {
+    "apiKey": {
+      "label": "API Key",
+      "help": "Your Octer.ai API key (starts with evo_)",
+      "sensitive": true,
+      "placeholder": "evo_..."
+    }
+  }
+}
