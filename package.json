@@ -1,0 +1,39 @@
+{
+  "name": "octer-channel",
+  "version": "1.0.0",
+  "description": "OpenClaw channel proxy for Octer.ai",
+  "main": "src/index.js",
+  "type": "module",
+  "author": "smallke",
+  "email": "support@octer.ai",
+  "license": "MIT",
+  "keywords": [
+    "octer",
+    "octer.ai",
+    "octer-channel",
+    "openclaw",
+    "openclaw-channel"
+  ],
+  "homepage": "https://octer.ai",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/smallke/octer-channel"
+  },
+  "bugs": {
+    "url": "https://github.com/smallke/octer-channel/issues"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}
