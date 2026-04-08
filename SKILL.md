@@ -29,21 +29,31 @@ openclaw plugins config octer-channel --set apiKey=YOUR_API_KEY
 
 API Key starts with `evo_`, you can get it from [octer.ai](https://octer.ai/workspace) click me => settings  => API Keys  => Create Key.
 
-### 3. Verify
+### 3. Allow Plugin
+
+Add `octer-channel` to the plugins allow list in `~/.openclaw/openclaw.json`:
+
+```json
+{
+  "plugins": {
+    "allow": ["octer-channel"]
+  }
+}
+```
+
+Or run:
+
+```bash
+openclaw config set plugins.allow '["octer-channel"]'
+```
+
+### 4. Verify
 
 ```bash
 openclaw plugins list
 ```
 
 Confirm `octer-channel` is enabled and configured.
-
-## How It Works
-
-- The plugin connects to `wss://octer.ai/ws/bridge` via WebSocket
-- It receives `tool_request` from the Octer cloud backend
-- Executes the request locally via OpenClaw CLI
-- Returns the result back to the cloud
-- Auto-reconnects on disconnection
 
 ## Troubleshooting
 
