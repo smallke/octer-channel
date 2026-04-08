@@ -1,6 +1,6 @@
 {
   "name": "octer-channel",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "OpenClaw channel proxy for Octer.ai",
   "main": "index.js",
   "type": "module",
@@ -9,6 +9,7 @@
     "src/",
     "openclaw.plugin.json",
     "SKILL.md",
+    "README.md",
     "LICENSE"
   ],
   "author": "smallke",
