@@ -140,9 +140,8 @@ function sendResponse(requestId, result, error, success) {
  */
 function executeOpenClaw(query) {
   return new Promise((resolve, reject) => {
-    const child = spawn(OPENCLAW_CMD, ['agent', '--agent', 'main', '--message', query], {
+    const child = spawn(OPENCLAW_CMD, ['agent', '--agent', 'main', '-m', query], {
       stdio: ['pipe', 'pipe', 'pipe'],
-      shell: true,
       timeout: 120000, // 2 min
     })
 
