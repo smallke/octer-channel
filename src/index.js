@@ -24,17 +24,25 @@ export function start(config = {}) {
 }
 
 function connect() {
+  // Clean up any existing connection before reconnecting
+  if (ws) {
+    try { ws.removeAllListeners(); ws.close() } catch {}
+    ws = null
+  }
+
   const hostname = os.hostname()
   const machineId = hostname + '-' + os.userInfo().username
   const url = `${BACKEND_WS_URL}?api_key=${apiKey}`
   log.info(`[octer-channel] Connecting to ${BACKEND_WS_URL} ...`)
 
-  ws = new WebSocket(url)
+  const socket = new WebSocket(url)
+  ws = socket
 
-  ws.on('open', () => {
+  socket.on('open', () => {
     log.info('[octer-channel] Connected to cloud backend')
-    // Send status message
-    ws.send(JSON.stringify({
+    // Guard: ensure this socket is still the active one and is truly open
+    if (socket.readyState !== WebSocket.OPEN) return
+    socket.send(JSON.stringify({
       type: 'status',
       hostname,
       machine_id: machineId,
@@ -43,7 +51,7 @@ function connect() {
     }))
   })
 
-  ws.on('message', async (data) => {
+  socket.on('message', async (data) => {
     let msg
     try {
       msg = JSON.parse(data.toString())
@@ -61,21 +69,21 @@ function connect() {
     }
   })
 
-  ws.on('close', (code, reason) => {
+  socket.on('close', (code, reason) => {
     log.info(`[octer-channel] Disconnected (code=${code}, reason=${reason || ''})`)
-    ws = null
+    if (ws === socket) ws = null
     scheduleReconnect()
   })
 
-  ws.on('error', (err) => {
+  socket.on('error', (err) => {
     log.error('[octer-channel] WebSocket error:', err.message)
     // 'close' event will follow, which triggers reconnect
   })
 
   // Ping every 30s to keep connection alive
   const pingInterval = setInterval(() => {
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ type: 'ping' }))
+    if (socket.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify({ type: 'ping' }))
     } else {
       clearInterval(pingInterval)
     }
