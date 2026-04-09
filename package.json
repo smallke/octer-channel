@@ -1,6 +1,6 @@
 {
   "name": "octer-channel",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "OpenClaw channel plugin for Octer.ai",
   "main": "index.js",
   "type": "module",
@@ -25,7 +25,7 @@
   "homepage": "https://octer.ai",
   "repository": {
     "type": "git",
-    "url": "https://github.com/smallke/octer-channel"
+    "url": "git+https://github.com/smallke/octer-channel.git"
   },
   "bugs": {
     "url": "https://github.com/smallke/octer-channel/issues"

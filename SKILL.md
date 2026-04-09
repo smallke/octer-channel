@@ -1,6 +1,6 @@
 ---
 name: octer-channel
-version: 1.1.0
+version: 1.1.1
 description: "Octer Channel — WebSocket bridge to Octer.ai. Enables remote tool execution via octer.ai cloud. Use when user mentions octer, octer-channel, or wants to connect to Octer.ai."
 metadata:
   requires:

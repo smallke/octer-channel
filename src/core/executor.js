@@ -26,6 +26,11 @@ export function executeOpenClaw(query, opts = {}) {
     const child = spawn(OPENCLAW_CMD, ['agent', '--agent', 'main', '-m', query], {
       stdio: ['pipe', 'pipe', 'pipe'],
       timeout,
+      env: {
+        ...process.env,
+        // Allow overriding the OpenClaw state directory via OPENCLAW_STATE_DIR
+        // e.g. for ~/.qclaw instead of default ~/.openclaw
+      },
     })
 
     let stdout = ''
@@ -38,7 +43,8 @@ export function executeOpenClaw(query, opts = {}) {
       if (code === 0) {
         resolve(stdout.trim() || '(no output)')
       } else {
-        reject(new Error(stderr.trim() || `Process exited with code ${code}`))
+        const detail = stderr.trim() || stdout.trim() || '(no output)'
+        reject(new Error(`openclaw exited with code ${code}: ${detail}`))
       }
     })
 
