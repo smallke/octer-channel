@@ -7,10 +7,15 @@
     "additionalProperties": false,
     "properties": {
       "apiKey": {
-        "type": "string"
+        "type": "string",
+        "description": "Octer.ai API key (starts with evo_)"
+      },
+      "name": {
+        "type": "string",
+        "description": "Display name for this account"
       }
     },
-    "required": ["apiKey"]
+    "required": []
   },
   "uiHints": {
     "apiKey": {

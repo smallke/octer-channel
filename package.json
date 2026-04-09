@@ -1,7 +1,7 @@
 {
   "name": "octer-channel",
-  "version": "1.0.4",
-  "description": "OpenClaw channel proxy for Octer.ai",
+  "version": "1.1.0",
+  "description": "OpenClaw channel plugin for Octer.ai",
   "main": "index.js",
   "type": "module",
   "files": [
@@ -31,17 +31,44 @@
     "url": "https://github.com/smallke/octer-channel/issues"
   },
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=22"
   },
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js"
   },
   "dependencies": {
-    "dotenv": "^16.4.7",
     "ws": "^8.18.0"
   },
+  "peerDependencies": {
+    "openclaw": ">=2026.3.22"
+  },
+  "peerDependenciesMeta": {
+    "openclaw": {
+      "optional": true
+    }
+  },
   "devDependencies": {
+    "dotenv": "^16.4.7",
     "nodemon": "^3.1.9"
+  },
+  "openclaw": {
+    "extensions": [
+      "./index.js"
+    ],
+    "channel": {
+      "id": "octer-channel",
+      "label": "Octer",
+      "selectionLabel": "Octer.ai",
+      "docsPath": "/channels/octer",
+      "docsLabel": "octer",
+      "blurb": "WebSocket bridge to Octer.ai cloud backend.",
+      "aliases": [],
+      "order": 100
+    },
+    "install": {
+      "npmSpec": "octer-channel",
+      "defaultChoice": "npm"
+    }
   }
 }

@@ -1,7 +1,7 @@
 ---
 name: octer-channel
-version: 1.0.4
-description: "Octer Channel - WebSocket bridge to Octer.ai cloud backend. Enables remote tool execution via octer.ai. Use when user mentions octer, octer-channel, or wants to connect to octer.ai cloud."
+version: 1.1.0
+description: "Octer Channel — WebSocket bridge to Octer.ai. Enables remote tool execution via octer.ai cloud. Use when user mentions octer, octer-channel, or wants to connect to Octer.ai."
 metadata:
   requires:
     bins: ["node"]
@@ -9,7 +9,13 @@ metadata:
 
 # Octer Channel
 
-> **CRITICAL** Before using this plugin, you must configure your Octer API Key.
+> **IMPORTANT**: You must configure your Octer.ai API Key before using this plugin.
+
+> **CRITICAL — Agent Behavior**: Before performing any Octer-related action, check whether the API key is configured by running:
+> ```bash
+> openclaw config get plugins.entries.octer-channel.config.apiKey
+> ```
+> If the key is empty or missing, **stop and guide the user** through the configuration steps below. Do NOT attempt to start the gateway or use the Octer channel without a valid API key (starts with `evo_`).
 
 ## Setup
 
@@ -19,56 +25,58 @@ metadata:
 openclaw plugins install octer-channel
 ```
 
+Or from a local path:
+
+```bash
+openclaw plugins install /path/to/octer-channel
+```
+
 ### 2. Configure API Key
 
-You **must** set your API Key before the plugin can work:
+Get your key from [octer.ai/workspace](https://octer.ai/workspace) → **Me** → **Settings** → **API Keys** → **Create Key**.
+
+Your key starts with `evo_`. Set it with:
 
 ```bash
-openclaw plugins config octer-channel --set apiKey=YOUR_API_KEY
+openclaw config set plugins.entries.octer-channel.config.apiKey "evo_YOUR_KEY"
 ```
 
-API Key starts with `evo_`, you can get it from [octer.ai](https://octer.ai/workspace) click me => settings  => API Keys  => Create Key.
-
-### 3. Allow Plugin
-
-Add `octer-channel` to the plugins allow list in `~/.openclaw/openclaw.json`:
-
-```json
-{
-  "plugins": {
-    "allow": ["octer-channel"]
-  }
-}
-```
-
-Or run:
+### 3. Restart Gateway
 
 ```bash
-openclaw config set plugins.allow '["octer-channel"]'
+openclaw gateway restart
 ```
 
 ### 4. Verify
 
 ```bash
-openclaw plugins list
+openclaw channels status
 ```
 
-Confirm `octer-channel` is enabled and configured.
+You should see:
+
+```
+- Octer default (Octer): enabled, configured, running
+```
+
+## How It Works
+
+The plugin connects to `wss://octer.ai/ws/bridge` via WebSocket and listens for `tool_request` messages from the Octer.ai cloud. Each request is dispatched to a local OpenClaw agent, and the result is sent back as a `tool_response`.
 
 ## Troubleshooting
 
 | Problem | Solution |
 |---------|----------|
-| `API_KEY is required` | Run `openclaw plugins config octer-channel --set apiKey=YOUR_KEY` |
-| WebSocket keeps disconnecting | Check network connection; the plugin will auto-reconnect every 3s |
-| `plugin not found` | Run `openclaw plugins install octer-channel` first |
+| Channel shows "not configured" | Set API Key: `openclaw config set plugins.entries.octer-channel.config.apiKey "evo_..."` |
+| WebSocket disconnects | Check network; auto-reconnects every 3s |
+| `plugin not found` | Run `openclaw plugins install octer-channel` |
+| Changes not taking effect | Run `openclaw gateway restart` |
 
 ## Standalone Mode
 
-You can also run it independently without OpenClaw plugin system:
+Run without the OpenClaw gateway:
 
 ```bash
-# Set API_KEY in .env file
 echo "API_KEY=evo_your_key_here" > .env
-node src/index.js
+npm start
 ```
